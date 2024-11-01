@@ -32,6 +32,7 @@ public class Main {
     public static boolean isBattling = false;
     private BattlingSlungus battle;
     public static AudioManager AM;
+    public static int slungusTexture;
     private long frameTimeA = System.currentTimeMillis();
     private long frameTimeB = System.currentTimeMillis();
     public float delta = 0;
@@ -50,6 +51,13 @@ public class Main {
         loop();
         cleanup();
     }
+
+    public static int random(float min, float max) {
+        int minCeiled = (int) Math.ceil(min);
+        int maxFloored = (int) Math.floor(max);
+        return (int) Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
+    }
+
     private void init() {
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
@@ -80,14 +88,15 @@ public class Main {
         AM = new AudioManager();
         battle = new BattlingSlungus();
         AM.init();
+        slungusTexture = TextureUtils.loadTexture("/res/Slungus.png");
 
 
         warningImage = new Model(new float[]{0, 0, 640, 0, 0, 480, 640, 480}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, TextureUtils.loadTexture("/res/warning.png"));
-        slungusBackgrounModel = new Model(new float[]{0, 0, 640, 0, 0, 480, 640, 480}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, TextureUtils.loadTexture("/res/Slungus.png"));
+        slungusBackgrounModel = new Model(new float[]{0, 0, 640, 0, 0, 480, 640, 480}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, slungusTexture);
 
         glfwSetMouseButtonCallback(window, (windowHandle, button, action, mods) -> {
             if(isBattling){
-                if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS || button == GLFW_MOUSE_BUTTON_1 && action == GLFW_RELEASE) {
+                if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS /* || button == GLFW_MOUSE_BUTTON_1 && action == GLFW_RELEASE */) {
                     double[] xpos = new double[1];
                     double[] ypos = new double[1];
                     glfwGetCursorPos(windowHandle, xpos, ypos);
@@ -123,20 +132,19 @@ public class Main {
     }
     public void startBattle() {
 
-        
+        boolean goldenSlungus = random(0, 1001)==500;
+        System.out.println("is golden slungus: "+goldenSlungus);
         TimerUtils.invertval(()->{
-            System.out.println("triggered");
-            for(int i=0; i < 3; i++){
+            for(int i=0; i < 10; i++){
                 TimerUtils.timeout(()->{
                     battle.spawnProjectileEnemy(battle.getX(), battle.getY());
-                    System.out.println("Spawned enemy projectile");
-                }, i*100);
+                }, i*25);
             }
-        }, 1000);
+        }, 2000);
 
         showWarning = true;
         timerBegin = System.currentTimeMillis();
-        battle.setup();
+        battle.setup(goldenSlungus);
         isBattling = true;
         glfwSetWindowTitle(Main.window, "SURVIVVE.");
         AM.addAudio("intro", "/res/intro.ogg");

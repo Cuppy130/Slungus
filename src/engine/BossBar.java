@@ -24,8 +24,7 @@ public class BossBar {
     public void render() {
         float healthPercentage = currentHealth / maxHealth;
         
-        // Background bar (e.g., red)
-        glColor4f(1f, 0f, 0f, 1f);
+        glColor4f(1f, 0f, 0f, 1);
         glBegin(GL_QUADS);
         glVertex2f(x, y);
         glVertex2f(x + width, y);
@@ -33,8 +32,7 @@ public class BossBar {
         glVertex2f(x, y + height);
         glEnd();
 
-        // Foreground bar (e.g., green), scaled by current health
-        glColor4f(1f, .5f, 0f, 1f);
+        glColor4f(1f, 1f, 0f, 1);
         glBegin(GL_QUADS);
         glVertex2f(x, y);
         glVertex2f(x + width * healthPercentage, y);

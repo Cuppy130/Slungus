@@ -3,7 +3,6 @@ package engine;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.glColor4f;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -36,18 +35,33 @@ public class BattlingSlungus {
 
     private float delta;
 
+    private Model vignette;
+    private boolean goldenSlungus = false;
+
+    private long timeLastHit = 0L;
+    private int timeDamage = 200;
+    private long timeCurrent = System.currentTimeMillis();
+
     private List<Projectile> projectiles = new CopyOnWriteArrayList<>();
     public BattlingSlungus(){
-        slungus = new Model(new float[]{0, 0, 256, 0, 0, 256, 256, 256}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, TextureUtils.loadTexture("/res/Slungus.png"));
-        player = new Model(new float[]{0, 0, 32, 0, 0, 32, 32, 32}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, TextureUtils.loadTexture("/res/Slungus.png"));
-        bullet = new Model(new float[]{0, 0, 16, 0, 0, 16, 16, 16}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, TextureUtils.loadTexture("/res/Slungus.png"));
+        slungus = new Model(new float[]{0, 0, 256, 0, 0, 256, 256, 256}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, Main.slungusTexture);
+        player = new Model(new float[]{0, 0, 32, 0, 0, 32, 32, 32}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, Main.slungusTexture);
+        bullet = new Model(new float[]{0, 0, 16, 0, 0, 16, 16, 16}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, Main.slungusTexture);
+        vignette = new Model(new float[]{0, 0, 640, 0, 0, 480, 640, 480}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, TextureUtils.loadTexture("/res/vignette.png"));
     }
-
+    
     public void draw() {
+        glColor4f(1, 1, 1, 1);
         bar.render();
         playerBar.render();
         glColor4f(1, 1, 1, 1);
+        if(goldenSlungus){
+            glColor4f(1, 1, 0, 1);
+        }
         slungus.render(x - 128, y - 128);
+        if(goldenSlungus){
+            glColor4f(1, 1, 1, 1);
+        }
         player.render(px - 16, py - 16);
 
         for (Projectile projectile : projectiles) {
@@ -60,7 +74,7 @@ public class BattlingSlungus {
             }
         }
     }
-
+    
     public void cleanup() {
         bar.cleanup();
         player.cleanup();
@@ -68,7 +82,7 @@ public class BattlingSlungus {
         bullet.cleanup();
         playerBar.cleanup();
     }
-
+    
     public void setup(){
         glfwSetKeyCallback(Main.window, (window, key, scancode, action, mods) -> {
             if (action == GLFW_PRESS) {
@@ -85,7 +99,7 @@ public class BattlingSlungus {
                     right = true;
                 }
             }
-
+    
             if (action == GLFW_RELEASE) {
                 if(key==GLFW_KEY_W){
                     up = false;
@@ -103,11 +117,17 @@ public class BattlingSlungus {
         });
     }
 
+    public void setup(boolean goldenSlungus) {
+        this.goldenSlungus = goldenSlungus;
+        setup();
+    }
+
     public static void closeWindow() {
         glfwSetWindowShouldClose(Main.window, true);
     }
 
     public void update(float delta) {
+        this.timeCurrent = System.currentTimeMillis();
         this.delta = delta;
         bar.updateHealth(slungusHealth);
         playerBar.updateHealth(playerHealth);
@@ -143,13 +163,28 @@ public class BattlingSlungus {
         x += Math.cos(theta) * slungusSpeed * delta;
         y += Math.sin(theta) * slungusSpeed * delta;
 
+        if(collidingWithSlungus()){
+            playerHealth -= 1;
+            Main.AM.playSound("hurt", null);
+            timeLastHit = System.currentTimeMillis();
+        }
+
+        if (timeCurrent - timeLastHit < timeDamage) {
+            float alpha = 1 - (float) (timeCurrent - timeLastHit) / timeDamage;
+            glColor4f(1, 1, 1, alpha);
+            vignette.render();
+            glColor4f(1, 1, 1, 1);
+        }
+
         for (int i = 0; i < projectiles.size(); i++) {
             Projectile projectile = projectiles.get(i);
             if(projectile.AABB(x-128, y-128, 256, 256)&&!projectile.isEnemy()){
                 slungusHealth-=bulletDamage;
+                Main.AM.playSound("hurt2", null);
             } else if(projectile.AABB(px-16, py-16, 32, 32)&&projectile.isEnemy()){
                 playerHealth-=bulletDamage;
                 Main.AM.playSound("hurt", null);
+                timeLastHit = System.currentTimeMillis();
             }
         }
 
@@ -220,6 +255,9 @@ public class BattlingSlungus {
         return py;
     }
 
+    private boolean collidingWithSlungus(){
+        return x-128 < px + 16 && x -128 + 256 > px && y-128 < py + 16 && y-128 + 256 > py;
+    }
     
 
 }
