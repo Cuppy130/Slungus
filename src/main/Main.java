@@ -84,11 +84,11 @@ public class Main {
         glfwSetWindowPos(window, (videoMode.width() - WIDTH) / 2, (videoMode.height() - HEIGHT) / 2);
         glfwSetWindowSize(window, WIDTH, HEIGHT);
         glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
+        slungusTexture = TextureUtils.loadTexture("/res/Slungus.png");
         slungus = new Slungus();
         AM = new AudioManager();
         battle = new BattlingSlungus();
         AM.init();
-        slungusTexture = TextureUtils.loadTexture("/res/Slungus.png");
 
 
         warningImage = new Model(new float[]{0, 0, 640, 0, 0, 480, 640, 480}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, TextureUtils.loadTexture("/res/warning.png"));
