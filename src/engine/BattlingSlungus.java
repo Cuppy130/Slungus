@@ -3,6 +3,7 @@ package engine;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.glColor4f;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -14,15 +15,19 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public class BattlingSlungus {
+    private Model slungiModel;
     private Model slungus;
     private Model player;
     private Model bullet;
-    private float x = 640/2, y = -128;
+
+    private float delta;
+    private float x = 640/2, y = -128-20;
     private float px = 640/2, py = 480/4*3;
     private float slungusSpeed = 1;
     private float speed = 1f;
-    private int slungusHealth = 50000;
-    private int bulletDamage = 3;
+    
+    private int slungusHealth = 5000;
+    private int bulletDamage = 7;
     private int playerHealth = 1000;
 
     private BossBar bar = new BossBar(slungusHealth, 640-220, 480-40, 200, 20);
@@ -33,7 +38,6 @@ public class BattlingSlungus {
     private boolean left;
     private boolean right;
 
-    private float delta;
 
     private Model vignette;
     private boolean goldenSlungus = false;
@@ -43,17 +47,18 @@ public class BattlingSlungus {
     private long timeCurrent = System.currentTimeMillis();
 
     private List<Projectile> projectiles = new CopyOnWriteArrayList<>();
+    private List<Slungi> slungis = new ArrayList<>();
+    
+
     public BattlingSlungus(){
         slungus = new Model(new float[]{0, 0, 256, 0, 0, 256, 256, 256}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, Main.slungusTexture);
         player = new Model(new float[]{0, 0, 32, 0, 0, 32, 32, 32}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, Main.slungusTexture);
         bullet = new Model(new float[]{0, 0, 16, 0, 0, 16, 16, 16}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, Main.slungusTexture);
+        slungiModel = new Model(new float[]{0, 0, 64, 0, 0, 64, 64, 64}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, Main.slungusTexture);
         vignette = new Model(new float[]{0, 0, 640, 0, 0, 480, 640, 480}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, TextureUtils.loadTexture("/res/vignette.png"));
     }
     
     public void draw() {
-        glColor4f(1, 1, 1, 1);
-        bar.render();
-        playerBar.render();
         glColor4f(1, 1, 1, 1);
         if(goldenSlungus){
             glColor4f(1, 1, 0, 1);
@@ -73,6 +78,17 @@ public class BattlingSlungus {
                 }
             }
         }
+        
+        glColor4f(1, 1, 1, 1);
+
+        for (Slungi slungi : slungis) {
+            if(!slungi.dead){slungiModel.render(slungi.getX()-32, slungi.getY()-32);}
+        }
+
+        bar.render();
+        playerBar.render();
+
+        
     }
     
     public void cleanup() {
@@ -127,6 +143,16 @@ public class BattlingSlungus {
     }
 
     public void update(float delta) {
+        for (Projectile projectile : projectiles) {
+            for (int i = 0; i < slungis.size(); i++) {
+                Slungi slungi = slungis.get(i);
+                slungi.update(delta);
+                if(Colliding(slungi.getX()-32, slungi.getY()-32, 64, 64, projectile.getX()-8, projectile.getY()-8, 16, 16)){
+                    slungis.remove(slungi);
+                }
+            }
+        }
+
         this.timeCurrent = System.currentTimeMillis();
         this.delta = delta;
         bar.updateHealth(slungusHealth);
@@ -168,6 +194,12 @@ public class BattlingSlungus {
             Main.AM.playSound("hurt", null);
             timeLastHit = System.currentTimeMillis();
         }
+        for (Slungi slungi : slungis) {
+            slungi.update(delta);
+            if(Colliding(slungi.getX()-32, slungi.getY()-32, 64, 64, px-16, py-16, 32, 32)){
+
+            }
+        }
 
         if (timeCurrent - timeLastHit < timeDamage) {
             float alpha = 1 - (float) (timeCurrent - timeLastHit) / timeDamage;
@@ -176,15 +208,18 @@ public class BattlingSlungus {
             glColor4f(1, 1, 1, 1);
         }
 
+
         for (int i = 0; i < projectiles.size(); i++) {
             Projectile projectile = projectiles.get(i);
             if(projectile.AABB(x-128, y-128, 256, 256)&&!projectile.isEnemy()){
                 slungusHealth-=bulletDamage;
                 Main.AM.playSound("hurt2", null);
+                projectiles.remove(projectile);
             } else if(projectile.AABB(px-16, py-16, 32, 32)&&projectile.isEnemy()){
                 playerHealth-=bulletDamage;
                 Main.AM.playSound("hurt", null);
                 timeLastHit = System.currentTimeMillis();
+                projectiles.remove(projectile);
             }
         }
 
@@ -198,6 +233,11 @@ public class BattlingSlungus {
         if(slungusHealth<=0){
             slungusBeaten();
         }
+        
+    }
+            
+    private boolean Colliding(float ax, float ay, int aw, int ah, float bx, float by, int bw, int bh) {
+        return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
     }
 
     private void failure(){
@@ -257,6 +297,10 @@ public class BattlingSlungus {
 
     private boolean collidingWithSlungus(){
         return x-128 < px + 16 && x -128 + 256 > px && y-128 < py + 16 && y-128 + 256 > py;
+    }
+
+    public void spawnSlungi(Slungi slungi) {
+        slungis.add(slungi);
     }
     
 

@@ -16,6 +16,7 @@ import org.lwjgl.glfw.GLFWVidMode;
 import engine.AudioManager;
 import engine.BattlingSlungus;
 import engine.Model;
+import engine.Slungi;
 import engine.Slungus;
 import engine.TextureUtils;
 import engine.TimerUtils;
@@ -133,7 +134,6 @@ public class Main {
     public void startBattle() {
 
         boolean goldenSlungus = random(0, 1001)==500;
-        System.out.println("is golden slungus: "+goldenSlungus);
         TimerUtils.invertval(()->{
             for(int i=0; i < 10; i++){
                 TimerUtils.timeout(()->{
@@ -141,6 +141,12 @@ public class Main {
                 }, i*25);
             }
         }, 2000);
+
+        TimerUtils.invertval(()->{
+            TimerUtils.timeout(()->{
+                battle.spawnSlungi(new Slungi(.5f, 1000, battle));
+            }, 1000);
+        }, 25257);
 
         showWarning = true;
         timerBegin = System.currentTimeMillis();
