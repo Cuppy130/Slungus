@@ -4,5 +4,7 @@
 ## Slungus
 - WASD to move
 - Click to shoot
-# new
+## new
 - 1 in 1000 chance of Golden Slungus spawning!!
+## features to add
+- Shop
