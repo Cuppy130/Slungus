@@ -171,4 +171,20 @@ public class AudioManager {
         return 0;
     }
 
+    public void setBackgroundEffect(String name, boolean enable) {
+        Integer source = audioSources.get(name);
+        if (source != null) {
+            if (enable) {
+                alSourcef(source, AL_GAIN, 0.2f);
+                alSourcef(source, AL_PITCH, 0.8f);
+                alSourcef(source, AL_ROLLOFF_FACTOR, 3.5f);
+            } else {
+                alSourcef(source, AL_GAIN, 1.0f);
+                alSourcef(source, AL_PITCH, 1.0f);
+                alSourcef(source, AL_ROLLOFF_FACTOR, 1.0f);
+            }
+        }
+    }
+    
+
 }

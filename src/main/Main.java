@@ -3,23 +3,12 @@ package main;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
-import java.awt.Color;
-import java.awt.Dimension;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-
 import org.lwjgl.opengl.GL;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWVidMode;
 
-import engine.AudioManager;
-import engine.BattlingSlungus;
-import engine.Model;
-import engine.Slungi;
-import engine.Slungus;
-import engine.TextureUtils;
-import engine.TimerUtils;
+import engine.*;
+import game.Game;
 
 public class Main {
     private boolean showWarning = false;
@@ -31,14 +20,19 @@ public class Main {
     private static final int HEIGHT = 480;
     private Slungus slungus;
     public static boolean isBattling = false;
-    private BattlingSlungus battle;
     public static AudioManager AM;
     public static int slungusTexture;
+    public static Model slungusRenderer;
+    private Game game;
+    public static int red;
+
+    // Delta time
     private long frameTimeA = System.currentTimeMillis();
     private long frameTimeB = System.currentTimeMillis();
     public float delta = 0;
+
     private Model warningImage;
-    private Model slungusBackgrounModel;
+    private Model slungusBackgroundModel;
     public void delta(){
         frameTimeB = frameTimeA;
         frameTimeA = System.currentTimeMillis();
@@ -51,12 +45,6 @@ public class Main {
         init();
         loop();
         cleanup();
-    }
-
-    public static int random(float min, float max) {
-        int minCeiled = (int) Math.ceil(min);
-        int maxFloored = (int) Math.floor(max);
-        return (int) Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
     }
 
     private void init() {
@@ -86,72 +74,49 @@ public class Main {
         glfwSetWindowSize(window, WIDTH, HEIGHT);
         glfwSetWindowAttrib(window, GLFW_RESIZABLE, GLFW_FALSE);
         slungusTexture = TextureUtils.loadTexture("/res/Slungus.png");
+        red = TextureUtils.loadTexture("/res/red.png");
         slungus = new Slungus();
         AM = new AudioManager();
-        battle = new BattlingSlungus();
         AM.init();
 
+        game = new Game();
 
         warningImage = new Model(new float[]{0, 0, 640, 0, 0, 480, 640, 480}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, TextureUtils.loadTexture("/res/warning.png"));
-        slungusBackgrounModel = new Model(new float[]{0, 0, 640, 0, 0, 480, 640, 480}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, slungusTexture);
+        slungusBackgroundModel = new Model(new float[]{0, 0, 640, 0, 0, 480, 640, 480}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, slungusTexture);
+        slungusBackgroundModel = new Model(new float[]{0, 0, 640, 0, 0, 480, 640, 480}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, slungusTexture);
+
+        AM.addAudio("congratulations", "/res/coratulations.ogg");
 
         glfwSetMouseButtonCallback(window, (windowHandle, button, action, mods) -> {
-            if(isBattling){
-                if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS /* || button == GLFW_MOUSE_BUTTON_1 && action == GLFW_RELEASE */) {
-                    double[] xpos = new double[1];
-                    double[] ypos = new double[1];
-                    glfwGetCursorPos(windowHandle, xpos, ypos);
-                    battle.spawnProjectile(xpos[0], ypos[0]);
-                    AM.stop("lazer");
-                    AM.playSound("lazer", null);
-                }
-            } else {
-                if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
+            System.out.println("click");
+            if(!isBattling){
+                if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS) {
                     double[] xpos = new double[1];
                     double[] ypos = new double[1];
                     GLFW.glfwGetCursorPos(windowHandle, xpos, ypos);
-                    if(xpos[0] > 134 && ypos[0] > 15 && xpos[0] < 220 && ypos[0] < 62){
+                    double x = xpos[0]; double y = ypos[0];
+                    System.out.println(ypos[0]);
+                    if(x>135&&y>15&&x<219&&y<62){
+                        isBattling = true;
+                        glfwSetMouseButtonCallback(windowHandle, null);
                         startBattle();
-                    } else if(ypos[0]>78){
-                        glfwDestroyWindow(windowHandle);
-                        JFrame frame = new JFrame("You WIn!!");
-                        frame.setAlwaysOnTop(true);
-                        frame.setBackground(Color.cyan);
-                        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                        frame.setLocationRelativeTo(null);
-                        frame.setSize(new Dimension(300, 100));
-                        JButton btn = new JButton("Ok");
-                        btn.addActionListener(ActionListener -> {
-                            System.exit(0);
-                        });
-                        frame.add(btn);
-                        frame.setVisible(true);
+                    } else if(ypos[0] > 78){
+                        AM.stop("congratulations");
+                        AM.playSound("congratulations", null);
+                        WinScreen.show();
                     }
                 }
             }
         });
     }
+
     public void startBattle() {
-
-        boolean goldenSlungus = random(0, 1001)==500;
-        TimerUtils.invertval(()->{
-            for(int i=0; i < 10; i++){
-                TimerUtils.timeout(()->{
-                    battle.spawnProjectileEnemy(battle.getX(), battle.getY());
-                }, i*25);
-            }
-        }, 2000);
-
-        TimerUtils.invertval(()->{
-            TimerUtils.timeout(()->{
-                battle.spawnSlungi(new Slungi(.5f, 1000, battle));
-            }, 1000);
-        }, 25257);
-
         showWarning = true;
         timerBegin = System.currentTimeMillis();
-        battle.setup(goldenSlungus);
         isBattling = true;
+
+        game.setup();
+
         glfwSetWindowTitle(Main.window, "SURVIVVE.");
         AM.addAudio("intro", "/res/intro.ogg");
         AM.addAudio("loop", "/res/loop.ogg");
@@ -161,6 +126,7 @@ public class Main {
         AM.addAudio("hurt", "/res/hurt.ogg");
         AM.addAudio("hurt2", "/res/hurt.ogg");
         AM.addAudio("glass", "/res/glassbreakingsfx.ogg");
+        AM.addAudio("slungus", "/res/this slungus to hold me.ogg");
 
         AM.setVolume("lazer", 0.2f);
         AM.setVolume("loop", 0.2f);
@@ -178,27 +144,24 @@ public class Main {
                 AM.playSound("loop", null);
             });
         });
-
     }
-
-
-
 
     private void loop() {
         while (!glfwWindowShouldClose(window)) {
             Main.AM.update();
             glClear(GL_COLOR_BUFFER_BIT);
+            RenderTaskQueue.processTasks();
 
             glColor4f(.25f, .25f, .25f, 1f);
-            slungusBackgrounModel.render();
-
+            slungusBackgroundModel.render();
             glColor4f(1f, 1f, 1f, 1f);
+
             if(!isBattling){
                 delta();
                 slungus.draw();
             } else {
-                battle.update(delta);
-                battle.draw();
+                game.update(delta);
+                game.draw();
             }
 
             if(showWarning){
@@ -216,14 +179,13 @@ public class Main {
             glfwPollEvents();
         }
     }
+
     private void cleanup() {
         glfwDestroyWindow(window);
         AM.cleanup();
-        battle.cleanup();
         warningImage.cleanup();
         slungus.cleanup();
-        slungusBackgrounModel.cleanup();
-        battle.cleanup();
+        slungusBackgroundModel.cleanup();
         
         glfwTerminate();
         System.exit(0);
