@@ -7,7 +7,7 @@ import game.Game;
 
 public class SlungusBoss extends Entity {
     private int bulletDamage = 1;
-    private int fireRate = 8;
+    private int fireRate = 1;
     private Game game;
     private ScheduledFuture<?> timer;
     @Override
@@ -31,7 +31,7 @@ public class SlungusBoss extends Entity {
                     game.spawnEnemyBullet(x, y, bulletDamage);
                 }, i*25);
             }
-        }, 1000);
+        }, 1000/fireRate);
     }
 
     public void stop(){
