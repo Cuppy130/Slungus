@@ -11,8 +11,10 @@ public class Bullet extends Entity {
 
     @Override
     public void update(float delta) {
-        this.vx = (float) Math.cos(direction) * 4;
-        this.vy = (float) Math.sin(direction) * 4;
+        // this.vx = (float) Math.cos(direction) * 4;
+        // this.vy = (float) Math.sin(direction) * 4;
+        velocity.x = (float) Math.cos(direction) * 4;
+        velocity.y = (float) Math.sin(direction) * 4;
         super.update(delta);
     }
 

@@ -2,6 +2,7 @@ package game;
 
 import static org.lwjgl.glfw.GLFW.*;
 
+import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.opengl.GL11;
 
@@ -85,6 +86,11 @@ public class Game {
         player.setup(this);
     }
 
+    public float clamp(float val, float min, float max){
+        // return Math.max(min, Math.min(max, val));
+        return val > max ? max : val < min ? min : val;
+    }
+
     public void update(float delta){
         // if(shop.open)return;
         player.update(delta);
@@ -136,16 +142,17 @@ public class Game {
                 }
             }
         }
-        if(player.getX()<16){
-            player.setX(16);
-        } else if(player.getX()>640-16){
-            player.setX(640-16);
-        }
-        if(player.getY()<16){
-            player.setY(16);
-        } else if(player.getY()>480-16){
-            player.setY(480-16);
-        }
+        // if(player.getX()<16){
+        //     player.setX(16);
+        // } else if(player.getX()>640-16){
+        //     player.setX(640-16);
+        // }
+        // if(player.getY()<16){
+        //     player.setY(16);
+        // } else if(player.getY()>480-16){
+        //     player.setY(480-16);
+        // }
+        player.setPosition(new Vector2f(clamp(player.getX(), 16, 640-16), clamp(player.getY(), 16, 480-16)));
         
         if(player.getHp()<=0){
             Main.isBattling = false;
@@ -169,8 +176,9 @@ public class Game {
                 //     System.out.println("final phase");
                 // });
             }
-            slungus.setX(320);
-            slungus.setY(-240);
+            // slungus.setX(320);
+            // slungus.setY(-240);
+            slungus.setPosition(new Vector2f(320, -240));
             Main.isBattling = false;
             Main.AM.stop("intro");
             Main.AM.stop("loop");
@@ -197,17 +205,17 @@ public class Game {
         // shop.render();
     }
 
-    public void spawnEnemyBullet(float x, float y, int damage){
+    public void spawnEnemyBullet(Vector2f pos, int damage){
         // if(shop.open)return;
         RenderTaskQueue.addTask(()->{
-            bullets.add(new Bullet(x, y, true, damage, (float) Math.atan2(player.getY() - slungus.getY(), player.getX() - slungus.getX())));
+            bullets.add(new Bullet(pos.x, pos.y, true, damage, (float) Math.atan2(player.getY() - slungus.getY(), player.getX() - slungus.getX())));
         });
     }
 
-    public void spawnBullet(float x, float y, int damage, int multiplier, float direction){
+    public void spawnBullet(Vector2f pos, int damage, int multiplier, float direction){
         // if(shop.open)return;
         RenderTaskQueue.addTask(()->{
-            bullets.add(new Bullet(x, y, false, damage*multiplier, direction));
+            bullets.add(new Bullet(pos.x, pos.y, false, damage*multiplier, direction));
         });
     }
 

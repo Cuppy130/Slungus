@@ -68,7 +68,7 @@ public class Player extends Entity {
                 double[] xpos = new double[1];
                 double[] ypos = new double[1];
                 GLFW.glfwGetCursorPos(Main.window, xpos, ypos);
-                game.spawnBullet(getX(), getY(), bulletDamage, buffs[0], (float)Math.atan2(ypos[0] - getY(), xpos[0] - getX()));
+                game.spawnBullet(position, bulletDamage, buffs[0], (float)Math.atan2(ypos[0] - getY(), xpos[0] - getX()));
                 Main.AM.playSound("lazer", null);
             }
         }, 1000/fireRate);
@@ -101,17 +101,30 @@ public class Player extends Entity {
 
     @Override
     public void update(float delta) {
+        // if(moveLeft){
+        //     x -= speed * delta * 10;
+        // }
+        // if(moveRight){
+        //     x += speed * delta * 10;
+        // }
+        // if(moveUp){
+        //     y -= speed * delta * 10;
+        // }
+        // if(moveDown){
+        //     y += speed * delta * 10;
+        // }
+
         if(moveLeft){
-            x -= speed * delta * 10;
+            position.x -= speed * delta * 10;
         }
         if(moveRight){
-            x += speed * delta * 10;
+            position.x += speed * delta * 10;
         }
         if(moveUp){
-            y -= speed * delta * 10;
+            position.y -= speed * delta * 10;
         }
         if(moveDown){
-            y += speed * delta * 10;
+            position.y += speed * delta * 10;
         }
     }
 }

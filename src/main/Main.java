@@ -83,7 +83,6 @@ public class Main {
 
         warningImage = new Model(new float[]{0, 0, 640, 0, 0, 480, 640, 480}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, TextureUtils.loadTexture("/res/warning.png"));
         slungusBackgroundModel = new Model(new float[]{0, 0, 640, 0, 0, 480, 640, 480}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, slungusTexture);
-        slungusBackgroundModel = new Model(new float[]{0, 0, 640, 0, 0, 480, 640, 480}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, slungusTexture);
 
         AM.addAudio("congratulations", "/res/coratulations.ogg");
 

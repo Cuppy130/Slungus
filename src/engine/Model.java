@@ -4,6 +4,8 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 
 import java.nio.FloatBuffer;
+
+import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 
 public class Model {
@@ -11,8 +13,9 @@ public class Model {
     private int v_id; 
     private int t_id;
     public int t;
-    public float x = 0;
-    public float y = 0;
+    // public float x = 0;
+    // public float y = 0;
+    public Vector2f position = new Vector2f(0, 0);
 
     public Model(float[] vertices, float[] tex_coords, int tex_id) {
         drawCount = vertices.length / 2;
@@ -30,12 +33,12 @@ public class Model {
     }
 
     public void render() {
-        render(x, y);
+        render(position);
     }
 
-    public void render(float offsetX, float offsetY) {
+    public void render(Vector2f position) {
         glPushMatrix();
-        glTranslatef(offsetX, offsetY, 0);
+        glTranslatef(position.x, position.y, 0);
 
         glEnableClientState(GL_VERTEX_ARRAY);
         glEnableClientState(GL_TEXTURE_COORD_ARRAY);

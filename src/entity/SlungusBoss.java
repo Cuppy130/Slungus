@@ -12,9 +12,11 @@ public class SlungusBoss extends Entity {
     private ScheduledFuture<?> timer;
     @Override
     public void update(float delta) {
-        direction = (float) Math.atan2(game.getPlayer().getY() - y, game.getPlayer().getX() - x);
-        vx = (float) Math.cos(direction) * speed;
-        vy = (float) Math.sin(direction) * speed;
+        direction = (float) Math.atan2(game.getPlayer().getY() - getY(), game.getPlayer().getX() - getX());
+        // vx = (float) Math.cos(direction) * speed;
+        // vy = (float) Math.sin(direction) * speed;
+        velocity.x = (float) Math.cos(direction) * speed;
+        velocity.y = (float) Math.sin(direction) * speed;
         super.update(delta);
     }
 
@@ -28,7 +30,7 @@ public class SlungusBoss extends Entity {
         timer = TimerUtils.interval(()->{
             for (int i = 0; i < 8; i++) {
                 TimerUtils.timeout(()->{
-                    game.spawnEnemyBullet(x, y, bulletDamage);
+                    game.spawnEnemyBullet(position, bulletDamage);
                 }, i*25);
             }
         }, 1000/fireRate);
