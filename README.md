@@ -1,6 +1,6 @@
-# Slungus
+# Slungus 2.0.0
 ## Requires to run:
-- At least [java 17](https://download.oracle.com/java/23/latest/jdk-23_windows-x64_bin.msi) to run prebuilt jar files
+- At least java 1.8 to run prebuilt jar files
 ## Slungus
 - WASD to move
 - Click to shoot
