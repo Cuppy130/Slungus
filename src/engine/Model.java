@@ -12,19 +12,33 @@ public class Model {
     private int drawCount;
     private int v_id; 
     private int t_id;
-    public int t;
-    // public float x = 0;
-    // public float y = 0;
+    public Texture t;
     public Vector2f position = new Vector2f(0, 0);
 
-    public Model(float[] vertices, float[] tex_coords, int tex_id) {
+    public Model (Vector2f size, Texture texture){
+        this(size, new Vector2f(1), texture);
+    }
+
+    public Model(Vector2f size, Vector2f tex, Texture texture){
+        this.t = texture;
+        float[] vertices = new float[]{
+            -size.x / 2, -size.y / 2,
+            size.x / 2, -size.y / 2,
+            -size.x / 2, size.y / 2,
+            size.x / 2, size.y / 2
+        };
+        float[] tex_coords = new float[]{
+            0, 0,
+            tex.x, 0,
+            0, tex.y,
+            tex.x, tex.y
+        };
         drawCount = vertices.length / 2;
-        t = tex_id;
 
         v_id = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, v_id);
         glBufferData(GL_ARRAY_BUFFER, createBuffer(vertices), GL_STATIC_DRAW);
-        
+
         t_id = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, t_id);
         glBufferData(GL_ARRAY_BUFFER, createBuffer(tex_coords), GL_STATIC_DRAW);
@@ -46,7 +60,7 @@ public class Model {
         glVertexPointer(2, GL_FLOAT, 0, 0);
         glBindBuffer(GL_ARRAY_BUFFER, t_id);
         glTexCoordPointer(2, GL_FLOAT, 0, 0);
-        glBindTexture(GL_TEXTURE_2D, t);
+        t.bind();
         glDrawArrays(GL_TRIANGLE_STRIP, 0, drawCount);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
