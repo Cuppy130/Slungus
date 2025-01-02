@@ -1,130 +1,68 @@
 package entity;
 
-import java.util.concurrent.ScheduledFuture;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 
-import org.lwjgl.glfw.GLFW;
+import org.joml.Vector2f;
 
-import engine.TimerUtils;
-import game.Game;
-import main.Main;
+import game.Gamestate;
 
 public class Player extends Entity {
-
-    public boolean mouseDown = false;
-
-    // For unlocking the second phase
-    private boolean hit = false;
-
-    // Shop stuff
-    private int points = 0;
-
-    // Firing
-    private int fireRate = 8; // x second/bullets
-    private ScheduledFuture<?> timer;
-    
-    // Sheild
     private int sheildHealth = 25;
-    private int sheildHealthMax = 25;
+    private int sheildMaxHealth = 25;
+    private int sheildRegen = 1;
+    private int sheildRegenRate = 1;
 
-    // Buffs
-    private int[] buffs = new int[3];
-
-
-    //movement
-    public boolean moveRight = false;
-    public boolean moveLeft = false;
-    public boolean moveUp = false;
-    public boolean moveDown = false;
-
-    private boolean isSetUp = false;
-
-    public Player(){
-        super(320, 480/4*3, 32);
-        bulletDamage = 2;
-        speed = 1;
-        hp = 100;
-        maxHp = 10000;
-        buffs[0] = 1;
+    public Player(Vector2f position) {
+        super(position, new Vector2f(64));
+        this.health = 100;
+        this.speed = 0.25;
     }
 
-    @Override
-    public void takeDamage(int hp) {
-        hit = true;
-        if(sheildHealth<=0){
-            super.takeDamage(hp);
-        } else {
-            sheildHealth -= 1;
-        }
-    }
-
-    public void setup(Game game) {
-        if (isSetUp) {
-            TimerUtils.stopInterval(timer);
-        } else {
-            isSetUp = true;
-        }
-        timer = TimerUtils.interval(()->{
-            if(mouseDown){
-                double[] xpos = new double[1];
-                double[] ypos = new double[1];
-                GLFW.glfwGetCursorPos(Main.window, xpos, ypos);
-                game.spawnBullet(position, bulletDamage, buffs[0], (float)Math.atan2(ypos[0] - getY(), xpos[0] - getX()));
-                Main.AM.playSound("lazer", null);
+    public void update(double delta) {
+        if(Gamestate.screen == 2){
+            if (sheildHealth < sheildMaxHealth) {
+                sheildHealth += sheildRegen;
+                if (sheildHealth > sheildMaxHealth) {
+                    sheildHealth = sheildMaxHealth;
+                }
             }
-        }, 1000/fireRate);
-    }
-    
-    public void gainPoints(int p){
-        points += p;
+            
+            position.x = clamp(position.x, size.x/2, 800 - size.x/2);
+            position.y = clamp(position.y, size.y/2, 600 - size.y/2);
+
+            if(Gamestate.keyPressed(GLFW_KEY_W)) {
+                position.y -= speed * delta;
+            }
+            System.out.println("Player position: " + position);
+        }
+        super.update(delta);
     }
 
-    public boolean isHit() {
-        return hit;
+    public float clamp(float val, float min, float max) {
+        return val < min ? min : val > max ? max : val;
     }
 
-    public int[] getBuffs() {
-        return buffs;
-    }
-    public int getPoints() {
-        return points;
-    }
-
-    public void setSheildHealth(int sheildHealth) {
-        this.sheildHealth = sheildHealth;
-    }
-    public void setFireRate(int fireRate) {
-        this.fireRate = fireRate;
-    }
-    public int getSheildHealth() {
-        return sheildHealth;
+    public void render() {
+        super.render();
     }
 
     @Override
-    public void update(float delta) {
-        // if(moveLeft){
-        //     x -= speed * delta * 10;
-        // }
-        // if(moveRight){
-        //     x += speed * delta * 10;
-        // }
-        // if(moveUp){
-        //     y -= speed * delta * 10;
-        // }
-        // if(moveDown){
-        //     y += speed * delta * 10;
-        // }
+    public void damage(int damage) {
+        if (sheildHealth > 0) {
+            sheildHealth -= damage;
+            if (sheildHealth < 0) {
+                health += sheildHealth;
+                sheildHealth = 0;
+            }
+        } else {
+            health -= damage;
+        }
+        if (health <= 0) {
+            alive = false;
+        }
+    }
 
-        if(moveLeft){
-            position.x -= speed * delta * 10;
-        }
-        if(moveRight){
-            position.x += speed * delta * 10;
-        }
-        if(moveUp){
-            position.y -= speed * delta * 10;
-        }
-        if(moveDown){
-            position.y += speed * delta * 10;
-        }
+    public Vector2f getPosition() {
+        return position;
     }
 }

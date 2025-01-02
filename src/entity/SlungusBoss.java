@@ -1,47 +1,20 @@
 package entity;
 
-import java.util.concurrent.ScheduledFuture;
-
-import engine.TimerUtils;
-import game.Game;
+import org.joml.Vector2f;
 
 public class SlungusBoss extends Entity {
-    private int bulletDamage = 1;
-    private int fireRate = 1;
-    private Game game;
-    private ScheduledFuture<?> timer;
-    @Override
-    public void update(float delta) {
-        direction = (float) Math.atan2(game.getPlayer().getY() - getY(), game.getPlayer().getX() - getX());
-        // vx = (float) Math.cos(direction) * speed;
-        // vy = (float) Math.sin(direction) * speed;
-        velocity.x = (float) Math.cos(direction) * speed;
-        velocity.y = (float) Math.sin(direction) * speed;
+    public SlungusBoss(Vector2f position) {
+        super(position, new Vector2f(512));
+        this.health = 25;
+        this.speed = 0.1;
+    }
+
+    public void update(double delta) {
         super.update(delta);
     }
 
-    public SlungusBoss(Game game){
-        super(640/2, -256, 256);
-        this.game = game;
-        speed = 0.1f;
-        bulletDamage = 7;
-        hp = 1000;
-        maxHp = 1000;
-        timer = TimerUtils.interval(()->{
-            for (int i = 0; i < 8; i++) {
-                TimerUtils.timeout(()->{
-                    game.spawnEnemyBullet(position, bulletDamage);
-                }, i*25);
-            }
-        }, 1000/fireRate);
+    public void render() {
+        super.render();
     }
-
-    public void stop(){
-        TimerUtils.stopInterval(timer);
-    }
-
-    @Override
-    public void takeDamage(int hp) {
-        super.takeDamage(hp);
-    }
+    
 }

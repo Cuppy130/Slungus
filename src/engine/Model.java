@@ -71,7 +71,8 @@ public class Model {
 
     private FloatBuffer createBuffer(float[] data) {
         FloatBuffer buffer = BufferUtils.createFloatBuffer(data.length);
-        buffer.put(data).flip();
+        buffer.put(data);
+        buffer.flip();
         return buffer;
     }
 

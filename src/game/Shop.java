@@ -3,8 +3,6 @@ import org.lwjgl.opengl.GL11;
 
 public class Shop {
     public boolean open = false;
-    private static final int width = 640;
-    private static final int height = 480;
     private static final float[] color = new float[]{0f, 0f, 0f, 0.5f};
 
     public Shop() {
@@ -29,9 +27,9 @@ public class Shop {
         // Render the shop rectangle
         GL11.glBegin(GL11.GL_QUADS);
         GL11.glVertex2f(0, 0);   // Bottom-left
-        GL11.glVertex2f(width, 0);    // Bottom-right
-        GL11.glVertex2f(width, height);     // Top-right
-        GL11.glVertex2f(0, height);    // Top-left
+        GL11.glVertex2f(800, 0); // Bottom-right
+        GL11.glVertex2f(800, 600); // Top-right
+        GL11.glVertex2f(0, 600);   // Top-left
         GL11.glEnd();
 
         // Disable blending to return to normal rendering

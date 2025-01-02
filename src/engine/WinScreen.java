@@ -1,6 +1,9 @@
 package engine;
 
 import javax.swing.*;
+
+import misc.Color;
+
 import java.awt.*;
 
 public class WinScreen {
@@ -12,11 +15,9 @@ public class WinScreen {
         frame.setLocationRelativeTo(null);
 
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(new Color(34, 139, 34));
 
         JLabel winLabel = new JLabel("Congratulations, You Win!", SwingConstants.CENTER);
         winLabel.setFont(new Font("Serif", Font.BOLD, 36));
-        winLabel.setForeground(Color.WHITE);
 
         JButton closeButton = new JButton("Close");
         closeButton.setFont(new Font("SansSerif", Font.PLAIN, 18));

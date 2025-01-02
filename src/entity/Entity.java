@@ -3,68 +3,64 @@ package entity;
 import org.joml.Vector2f;
 
 import engine.Model;
-import main.Main;
+import engine.Texture;
+import misc.Color;
 
 public class Entity {
+    protected Vector2f size;
     protected Vector2f position;
-    protected Vector2f velocity;
-    protected float speed;
-    protected int hp;
-    protected int maxHp;
-    protected int size;
-    protected int bulletDamage;
-    protected Model entityModel;
-    public float direction;
+    protected Model model;
+    protected double direction;
+    protected double speed;
+    protected Vector2f target;
+    protected boolean alive;
+    protected Color color;
+    protected int health;
+    protected int damage;
+    protected double maxSpeed = 1;
 
-    public Entity(float x, float y, int size){
-        position = new Vector2f(x, y);
-        velocity = new Vector2f();
+    // weapon
+    protected int barrels = 1; // number of barrels, 4 creates a diamond pattern
+    protected int spread = 0; // degrees
+    protected int fireRate = 1; // 1 / sec
+
+    // looking vector
+
+
+    public Entity(Vector2f position, Vector2f size) {
         this.size = size;
-        entityModel = new Model(new float[]{0, 0, size, 0, 0, size, size, size}, new float[]{0, 0, 1, 0, 0, 1, 1, 1}, Main.slungusTexture);
-    }
-
-    public void takeDamage(int hp){
-        this.hp-=hp;
-    }
-
-    public void update(float delta){
-        // old code
-        // x += vx * delta * 10;
-        // y += vy * delta * 10;
-
-        // new code
-        position.add(velocity.mul(delta * 10));
-    }
-
-    public float getX(){
-        return position.x;
-    }
-
-    public float getY(){
-        return position.y;
-    }
-
-    public void draw(){
-        entityModel.render(position.sub(new Vector2f(size/2)));
-    }
-
-    public Vector2f getPosition() {
-        return position;
-    }
-
-    public void setPosition(Vector2f position) {
+        this.target = new Vector2f(0, 0);
         this.position = position;
+        this.direction = 0;
+        this.speed = 0;
+        this.alive = true;
+        this.color = new Color(1,1,1);
+        this.health = 100;
+        this.damage = 10;
+        this.model = new Model(size, new Texture("/res/images/Slungus.png"));
     }
 
-    public int getSize() {
-        return size;
+    public void update(double delta) {
+        if (position.distance(target) < 0.1) {
+            position = target;
+        } else {
+            position.add((float)(Math.cos(direction) * speed * delta), (float)(Math.sin(direction) * speed * delta));
+        }
     }
 
-    public int getHp() {
-        return hp;
+    public void render() {
+        model.render(position);
     }
 
-    public int getMaxHp() {
-        return maxHp;
+    public void damage(int damage) {
+        health -= damage;
+        if (health <= 0) {
+            alive = false;
+        }
+    }
+
+    public void setTarget(Vector2f target) {
+        this.target = target;
+        direction = Math.atan2(target.y - position.y, target.x - position.x);
     }
 }
