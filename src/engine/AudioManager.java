@@ -30,6 +30,11 @@ public class AudioManager {
         }
 
         context = ALC11.alcCreateContext(device, (IntBuffer) null);
+
+        if (context == 0) {
+            throw new IllegalStateException("Failed to create OpenAL context.");
+        }
+
         ALC11.alcMakeContextCurrent(context);
 
         ALCCapabilities alcCapabilities = ALC.createCapabilities(device);
